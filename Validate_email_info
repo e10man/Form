@@ -1,0 +1,206 @@
+<body onload="currentTime(),currentDate()">
+
+<?php 
+  	
+	$firstName = $lastName = $email = $gender = $comment = $website = "";     //Variables to check for validation in form
+  $firstNameErr = $lastNameErr = $emailErr = $genderErr = $websiteErr = ""; //Variables to output when an error occurs
+	$firstNameVal = $lastNameVal = $genderVal = $emailVal = false;            //Variables to be set true upon proper validation 
+	
+  if($_SERVER["REQUEST_METHOD"] == "POST")
+  {
+    //Checks if a variable is empty. Assigns a string to error variable if so and test input for each field if not
+    if(empty($_POST["firstName"]))
+      $firstNameErr = "First name is required";
+    else 
+			$firstName = test_input($_POST["firstName"]);
+	
+    //Checks to see if illegal characters are in name
+		if(!preg_match("/^[a-zA-Z ]*$/",$firstName))
+			$firstNameErr = "Only letters and white spaces allowed";
+		else
+			$firstNameVal = true;
+			
+		//Last Name		
+		if(empty($_POST["lastName"]))
+      $lastNameErr = "Last name is required";
+    else 
+			$lastName = test_input($_POST["lastName"]);
+	
+    //Checks to see if illegal characters are in name
+		if(!preg_match("/^[a-zA-Z ]*$/",$lastName))
+			$lastNameErr = "Only letters and white spaces allowed";
+		else
+			$lastNameVal = true;
+            
+		//Email	
+    if(empty($_POST["email"]))
+      $emailErr = "Email is required";
+    else
+		 {
+			$email = spamCheck($_POST["email"]);
+			
+			//Validate e-mail address
+			if(!filter_var($email, FILTER_VALIDATE_EMAIL))
+				$emailErr = "Invalid email format";
+			else 
+				$emailVal = true;
+		 }
+				
+      //Gender
+      if(empty($_POST["gender"]))
+        $genderErr = "Gender is required";
+      else
+		 {
+		    $gender = test_input($_POST["gender"]); 
+			  $genderVal = true;
+		 }
+           
+		 //Website  
+      if(empty($_POST["website"]))
+        $website = "";
+      else
+		 {
+        $website = test_input($_POST["website"]);
+			
+		 	  //Checks to see if it is a valid URL for website	
+		 	  if(!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $website))
+		 		  $websiteErr = "Invalid URL";
+		 }
+		 
+     if(empty($_POST["comment"]))
+        $comment = "";
+      else
+        $comment = test_input($_POST["comment"]);
+    }
+	
+	function test_input($data)
+	{
+		$data = trim($data);
+		$data = stripslashes($data);
+		$data = htmlspecialchars($data);		
+		return $data;
+	}
+	
+	//Added code to test for proper email
+	function spamCheck($data)
+	{
+		$data = trim($data);
+		$data = stripslashes($data);
+		$data = htmlspecialchars($data);
+		//Sanitize e-mail address
+		$data = filter_var($data, FILTER_SANITIZE_EMAIL);
+		return $data;
+	}
+?>
+
+<div id = "formStyle">
+  <p class = "error">* required field.</p>
+	<form id = "testForm" name = "myForm" method = "post" action = "<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+    First Name: <input type = "text" name = "firstName" value = "<?php echo $firstName;?>">
+    <span class = "error">* <?php echo $firstNameErr;?></span>
+    <br><br>
+    Last Name: <input type = "text" name = "lastName" value = "<?php echo $lastName;?>">
+    <span class = "error">* <?php echo $lastNameErr;?></span>
+    <br><br>
+    Email: <input type = "text" name = "email" value = "<?php echo $email;?>">    
+    <span class = "error">* <?php echo $emailErr;?></span>
+    <br><br>
+   	Website: <input type = "text" name = "website" value = "<?php echo $website;?>">
+   	<span class = "error"> <?php echo $websiteErr;?></span>
+   	<br><br>
+   	Comment: <textarea name = "comment" rows="5" cols="40"><?php echo $comment;?></textarea>
+   	<br><br>
+   	Gender:
+    <input type = "radio" name = "gender" <?php if (isset($gender) && $gender == "female") echo "checked";?>  value = "female">Female
+   	<input type = "radio" name = "gender" <?php if (isset($gender) && $gender == "male") echo "checked";?>  value = "male">Male
+   	<span class="error">* <?php echo $genderErr;?></span>
+    <br><br>
+   	<input type = "submit" onclick="ReplaceForm()" name = "submit" value = "Submit">
+	</form>
+  
+<?php 
+  if($firstNameVal && $lastNameVal && $emailVal && $genderVal == true)
+	{
+		//Create / test connection to mySQL server
+		$con = mysqli_connect("chaosx2.ipagemysql.com", "e10man", "twilight64", "my_db6610") or die("Failed to connect to MYSQL: " . 				                        mysqli_connect_error());
+	
+	  ///////////////////////////////////////Email code: Sets the email and mail it/////////////////////////////////
+		$emailFrom = $_POST["email"]; 
+		$emailTo = " "; //Enter your email within quotation marks
+					
+		//Email Header
+		$header = "From: " . $emailFrom . "\r\n".
+				  		"To: " . $emailTo . "\r\n";
+					
+		//Body of the email
+		$email_message .= "Name: " . $_POST["firstName"] . " " . $_POST["lastName"]."\n";
+		$email_message .= "Email: " . $_POST["email"]."\n";
+		$email_message .= "Website: " . $_POST["website"]."\n";
+		$email_message .= "Gender: " . $_POST["gender"]."\n";
+		$email_message .= "\n";
+		$email_message .= $_REQUEST["comment"];
+						
+		//Mail a copy to myself and the person that emailed it
+    mail($emailTo, "Test Email", $email_message, $header);
+		mail($_POST["email"], "Test Email", $email_message, $header);
+						
+		//Code to clean each field and store it in MySQL table
+		$firstName_TB = mysqli_real_escape_string($con, $_POST["firstName"]);
+		$lastName_TB = mysqli_real_escape_string($con, $_POST["lastName"]);
+		$email_TB = mysqli_real_escape_string($con, $_POST["email"]);
+		$website_TB = mysqli_real_escape_string($con, $_POST["website"]);
+		$gender_TB = mysqli_real_escape_string($con, $_POST["gender"]);
+		
+		//Insert into table (mySQL stuff. Omit this code if not interested)
+		sqlTB = "INSERT INTO PortfolioFormData(FirstName, LastName, Email, Website, Gender)
+											         VALUES('$firstName_TB', '$lastName_TB', '$email_TB', '$website_TB', '$gender_TB')";
+											         
+		//If connection messes up
+		if(!mysqli_query($con, $sqlTB))
+			die("Error: " . mysqli_error($con));
+	  }
+?>
+</div>
+//Had a div here with simple css to make a black line. Do what you will to seperate your form from the next part of your content
+            
+	<div id="for_replacement" style="display:none;">
+    <p>Thank you for submitting your form! Check out the information in an email that has been sent to you.</p>
+    <br>
+    <p>- Name</p>
+	</div>
+                
+<br>
+<br>
+    
+<script>
+function ReplaceForm()
+{
+	var patternToCheck = new RegExp([^0-9]);//('/^[A-Za-z0-9 ]{3,20}$/');
+			
+	//Check name field
+	var valFirstName = document.myForm.firstName.value;//.getElementsByName("firstName").value;
+	var valLastName = document.myForm.lastName.value;//getElementsByName("lastName").value;
+			
+	//Checks the input for the email part of the form
+  var x = document.forms["testForm"]["email"].value;
+  var atpos = x.indexOf("@");
+  var dotpos = x.lastIndexOf(".");
+			
+	if(patternToCheck.test(valFirstName))
+	{
+		//Do nothing
+		//alert("special characters!"); //Un-comment this line for testing purposes
+	}
+	else if (atpos<1 || dotpos<atpos+2 || dotpos+2>=x.length) 
+	{
+		//Do nothing 
+		//alert ("nope!"); //Un-comment for testing purposes
+	}
+	else
+		document.getElementById("testForm").innerHTML = document.getElementById("for_replacement").innerHTML;
+}
+</script>
+
+<!--Including Javascript-->
+<script src = "http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+</body>
