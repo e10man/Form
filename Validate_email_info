@@ -1,96 +1,95 @@
-<body onload="currentTime(),currentDate()">
-
+<body>
 <?php 
   	
 $firstName = $lastName = $email = $gender = $comment = $website = "";     //Variables to check for validation in form
 $firstNameErr = $lastNameErr = $emailErr = $genderErr = $websiteErr = ""; //Variables to output when an error occurs
 $firstNameVal = $lastNameVal = $genderVal = $emailVal = false;            //Variables to be set true upon proper validation 
 	
-  if($_SERVER["REQUEST_METHOD"] == "POST")
-  {
-    //Checks if a variable is empty. Assigns a string to error variable if so and test input for each field if not
-    if(empty($_POST["firstName"]))
-      $firstNameErr = "First name is required";
-    else 
-			$firstName = test_input($_POST["firstName"]);
+if($_SERVER["REQUEST_METHOD"] == "POST")
+{
+	//Checks if a variable is empty. Assigns a string to error variable if so and test input for each field if not
+  if(empty($_POST["firstName"]))
+  	$firstNameErr = "First name is required";
+  else 
+		$firstName = test_input($_POST["firstName"]);
 	
-    //Checks to see if illegal characters are in name
-		if(!preg_match("/^[a-zA-Z ]*$/",$firstName))
-			$firstNameErr = "Only letters and white spaces allowed";
-		else
-			$firstNameVal = true;
+  //Checks to see if illegal characters are in name
+  if(!preg_match("/^[a-zA-Z ]*$/",$firstName))
+		$firstNameErr = "Only letters and white spaces allowed";
+  else
+		$firstNameVal = true;
 			
-		//Last Name		
-		if(empty($_POST["lastName"]))
-      $lastNameErr = "Last name is required";
-    else 
-			$lastName = test_input($_POST["lastName"]);
+  //Last Name		
+  if(empty($_POST["lastName"]))
+  	$lastNameErr = "Last name is required";
+  else 
+		$lastName = test_input($_POST["lastName"]);
 	
-    //Checks to see if illegal characters are in name
-		if(!preg_match("/^[a-zA-Z ]*$/",$lastName))
-			$lastNameErr = "Only letters and white spaces allowed";
-		else
-			$lastNameVal = true;
+  //Checks to see if illegal characters are in name
+  if(!preg_match("/^[a-zA-Z ]*$/",$lastName))
+		$lastNameErr = "Only letters and white spaces allowed";
+  else
+		$lastNameVal = true;
             
-		//Email	
-    if(empty($_POST["email"]))
-      $emailErr = "Email is required";
-    else
-		 {
-			$email = spamCheck($_POST["email"]);
+  //Email	
+  if(empty($_POST["email"]))
+  	$emailErr = "Email is required";
+  else
+  {
+  	$email = spamCheck($_POST["email"]);
 			
-			//Validate e-mail address
-			if(!filter_var($email, FILTER_VALIDATE_EMAIL))
-				$emailErr = "Invalid email format";
-			else 
-				$emailVal = true;
-		 }
+    //Validate e-mail address
+    if(!filter_var($email, FILTER_VALIDATE_EMAIL))
+			$emailErr = "Invalid email format";
+  	else 
+			$emailVal = true;
+   }
 				
-      //Gender
-      if(empty($_POST["gender"]))
-        $genderErr = "Gender is required";
-      else
-		 {
-		    $gender = test_input($_POST["gender"]); 
-			  $genderVal = true;
-		 }
+   //Gender
+    if(empty($_POST["gender"]))
+    	$genderErr = "Gender is required";
+    else
+    {
+			$gender = test_input($_POST["gender"]); 
+			$genderVal = true;
+    }
            
-		 //Website  
-      if(empty($_POST["website"]))
-        $website = "";
-      else
-		 {
-        $website = test_input($_POST["website"]);
+		//Website  
+    if(empty($_POST["website"]))
+      $website = "";
+    else
+		{
+			$website = test_input($_POST["website"]);
 			
-		 	  //Checks to see if it is a valid URL for website	
-		 	  if(!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $website))
-		 		  $websiteErr = "Invalid URL";
+		 	//Checks to see if it is a valid URL for website	
+		 	if(!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $website))
+		 		$websiteErr = "Invalid URL";
 		 }
 		 
-     if(empty($_POST["comment"]))
-        $comment = "";
-      else
-        $comment = test_input($_POST["comment"]);
-    }
+  if(empty($_POST["comment"]))
+  	$comment = "";
+  else
+    $comment = test_input($_POST["comment"]);
+}
 	
-	function test_input($data)
-	{
-		$data = trim($data);
-		$data = stripslashes($data);
-		$data = htmlspecialchars($data);		
-		return $data;
-	}
+function test_input($data)
+{
+	$data = trim($data);
+	$data = stripslashes($data);
+	$data = htmlspecialchars($data);		
+	return $data;
+}
 	
-	//Added code to test for proper email
-	function spamCheck($data)
-	{
-		$data = trim($data);
-		$data = stripslashes($data);
-		$data = htmlspecialchars($data);
-		//Sanitize e-mail address
-		$data = filter_var($data, FILTER_SANITIZE_EMAIL);
-		return $data;
-	}
+//Added code to test for proper email
+function spamCheck($data)
+{
+	$data = trim($data);
+	$data = stripslashes($data);
+	$data = htmlspecialchars($data);
+	//Sanitize e-mail address
+	$data = filter_var($data, FILTER_SANITIZE_EMAIL);
+	return $data;
+}
 ?>
 
 <div id = "formStyle">
