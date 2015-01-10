@@ -2,9 +2,9 @@
 
 <?php 
   	
-	$firstName = $lastName = $email = $gender = $comment = $website = "";     //Variables to check for validation in form
-  $firstNameErr = $lastNameErr = $emailErr = $genderErr = $websiteErr = ""; //Variables to output when an error occurs
-	$firstNameVal = $lastNameVal = $genderVal = $emailVal = false;            //Variables to be set true upon proper validation 
+$firstName = $lastName = $email = $gender = $comment = $website = "";     //Variables to check for validation in form
+$firstNameErr = $lastNameErr = $emailErr = $genderErr = $websiteErr = ""; //Variables to output when an error occurs
+$firstNameVal = $lastNameVal = $genderVal = $emailVal = false;            //Variables to be set true upon proper validation 
 	
   if($_SERVER["REQUEST_METHOD"] == "POST")
   {
